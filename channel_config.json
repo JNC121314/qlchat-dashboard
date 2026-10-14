@@ -1,0 +1,24 @@
+{
+  "channelId": "135790703976",
+  "channelName": "武汉-6元",
+  "saTokenUrl": "https://edu-admin-mobile.qlchat.com/#/channelSearch?id=135790703976",
+  "loginUrl": "https://sso.dachensky.com/login/oauth/authorize?client_id=bfa06141ba916822a537&response_type=code&redirect_uri=https%3A%2F%2Fedu-admin-mobile.qlchat.com%2F%23%2FchannelSearch%3Fid%3D135790703976&scope=read&state=casdoor",
+  "apiBase": "https://edu-admin-mobile.qlchat.com",
+  "apiConfig": "https://edu-admin-mobile.qlchat.com/admin/statdata/channelReport/getConfig?id=135790703976",
+  "apiList": "https://edu-admin-mobile.qlchat.com/admin/statdata/channelReport/list",
+  "phone": "13349839892",
+  "channelIds": [136028810082,136268402605,136029110064,136029110522,136031510475,136029010817,136360200031,136029010986,136360200043,136361901823,136360201931,136360101907,136360701950,136362301737,136360101926,147564067816,159236500062],
+  "dataFields": ["assign_num", "friend_num", "friend_rate", "group_num", "group_rate", "enter_class1_rate", "finish_class1_rate", "delete_friend_num", "delete_friend_rate"],
+  "fieldNames": {
+    "assign_num": "分配量",
+    "friend_num": "加微数",
+    "friend_rate": "加微率",
+    "group_num": "进群数",
+    "group_rate": "进群率",
+    "enter_class1_rate": "D1到课率",
+    "finish_class1_rate": "D1完课率",
+    "delete_friend_num": "删友数",
+    "delete_friend_rate": "删友率"
+  },
+  "notes": "sa-token存放于环境变量QLCHAT_SA_TOKEN；如过期需人工重新登录获取新token"
+}
