@@ -10,15 +10,32 @@
   "channelIds": [136028810082,136268402605,136029110064,136029110522,136031510475,136029010817,136360200031,136029010986,136360200043,136361901823,136360201931,136360101907,136360701950,136362301737,136360101926,147564067816,159236500062],
   "dataFields": ["assign_num", "friend_num", "friend_rate", "group_num", "group_rate", "enter_class1_rate", "finish_class1_rate", "delete_friend_num", "delete_friend_rate"],
   "fieldNames": {
-    "assign_num": "分配量",
-    "friend_num": "加微数",
-    "friend_rate": "加微率",
+    "assign_num": "线索数",
+    "friend_num": "好友数",
+    "friend_rate": "好友率",
     "group_num": "进群数",
     "group_rate": "进群率",
-    "enter_class1_rate": "D1到课率",
-    "finish_class1_rate": "D1完课率",
-    "delete_friend_num": "删友数",
+    "enter_class1_rate": "首节到课率",
+    "finish_class1_rate": "首节完课率",
+    "delete_friend_num": "删除好友数",
+    "delete_friend_rate": "删除好友率"
+  },
+  "fieldNamesShort": {
+    "assign_num": "线索",
+    "friend_num": "好友",
+    "friend_rate": "好友率",
+    "group_num": "进群",
+    "group_rate": "进群率",
+    "enter_class1_rate": "到课",
+    "finish_class1_rate": "完课",
+    "delete_friend_num": "删友",
     "delete_friend_rate": "删友率"
   },
-  "notes": "sa-token存放于环境变量QLCHAT_SA_TOKEN；如过期需人工重新登录获取新token"
+  "dailyPush": {
+    "metric": "assign_num",
+    "metricName": "线索数",
+    "compareDays": 1,
+    "topChannelsInChips": 4
+  },
+  "notes": "sa-token存放于环境变量QLCHAT_SA_TOKEN；如过期需人工重新登录获取新token。字段中文名以UI为准(2026-10-14核对: 线索数/好友数/好友率/进群数/进群率/首节到课率/首节完课率/删除好友数/删除好友率)"
 }

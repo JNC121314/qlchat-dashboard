@@ -26,28 +26,39 @@ jobs:
       - name: 安装依赖
         run: pip install requests
 
-      - name: 拉取数据（昨日 + 当月累计 + 历史回退）
+      - name: 拉取数据（昨日 + 今日 + 当月累计 + 上月回退）
         env:
           TZ: Asia/Shanghai
           QLCHAT_SA_TOKEN: ${{ secrets.QLCHAT_SA_TOKEN }}
         run: |
+          TODAY=$(date '+%Y-%m-%d')
           YESTERDAY=$(date -d 'yesterday' '+%Y-%m-%d')
           FIRST_OF_MONTH=$(date '+%Y-%m-01')
           FIRST_OF_LAST_MONTH=$(date -d 'last month' '+%Y-%m-01' 2>/dev/null || date -d '1 month ago' '+%Y-%m-01')
-          echo "📅 拉取: $FIRST_OF_MONTH ~ $YESTERDAY (明细)"
+          LAST_MONTH_END=$(date -d 'last day of last month' '+%Y-%m-%d' 2>/dev/null || date '+%Y-%m-%d')
+
+          echo "📅 拉取: $FIRST_OF_MONTH ~ $YESTERDAY (区间明细)"
           python fetch_qlchat_data.py --start "$FIRST_OF_MONTH" --end "$YESTERDAY" || {
             echo "⚠️ 区间失败, 降级到昨日单日"
-            python fetch_qlchat_data.py --auto
+            python fetch_qlchat_data.py --date "$YESTERDAY"
           }
-          # 若当月无数据，回退到上月整月
-          RECENT_COUNT=$(ls -1 data/raw_${FIRST_OF_MONTH}_*_N.json 2>/dev/null | head -1 | xargs -I {} python3 -c "import json; print(len(json.load(open('{}'))['data'] or []))" 2>/dev/null || echo "0")
+          echo "📅 拉取: $YESTERDAY (昨日单日)"
+          python fetch_qlchat_data.py --date "$YESTERDAY" || true
+          echo "📅 拉取: $TODAY (今日单日，用于量级速览对比)"
+          python fetch_qlchat_data.py --date "$TODAY" || true
+
+          # 当月无数据时回退到上月整月（作为完整页面的历史参考）
+          RECENT_FILE=$(ls -1 data/raw_${FIRST_OF_MONTH}_*_N.json 2>/dev/null | head -1)
+          RECENT_COUNT=$(python3 -c "import json,sys
+          import os
+          f='$RECENT_FILE'
+          if f and os.path.exists(f):
+            print(len(json.load(open(f)).get('data') or []))
+          else: print(0)" 2>/dev/null || echo "0")
           if [ "$RECENT_COUNT" = "0" ]; then
-            echo "⚠️ 当月无数据, 回退到上月: $FIRST_OF_LAST_MONTH ~ $(date -d 'last day of last month' '+%Y-%m-%d' 2>/dev/null || echo "$YESTERDAY")"
-            LAST_MONTH_END=$(date -d 'last day of last month' '+%Y-%m-%d' 2>/dev/null || date '+%Y-%m-%d')
+            echo "⚠️ 当月无数据, 回退到上月: $FIRST_OF_LAST_MONTH ~ $LAST_MONTH_END"
             python fetch_qlchat_data.py --start "$FIRST_OF_LAST_MONTH" --end "$LAST_MONTH_END" || true
           fi
-          echo "📅 拉取: $YESTERDAY (汇总)"
-          python fetch_qlchat_data.py --date "$YESTERDAY" --isSummary Y || true
 
       - name: 生成报告
         env:
