@@ -56,15 +56,22 @@ jobs:
           fi
           echo "✅ 报告已准备 ($(stat -c%s publish/index.html 2>/dev/null || stat -f%z publish/index.html) bytes)"
 
-      - name: 部署到 Cloudflare Pages
+      - name: 部署到 GitHub Pages
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TZ: Asia/Shanghai
         run: |
-          rm -rf ~/.npm/_npx 2>/dev/null || true
-          npm install wrangler@latest --no-save 2>/dev/null
-          cd publish
-          npx wrangler pages deploy . --project-name=qlchat-dashboard --branch=main
+          # 生成 .nojekyll 防止 Jekyll 处理
+          touch publish/.nojekyll
+          # 使用 peaceiris/actions-gh-pages 部署
+          # 简化: 直接用 git push 到 gh-pages 分支
+          git config user.name "WorkBuddy Bot"
+          git config user.email "auto@workbuddy.dev"
+          git fetch origin gh-pages 2>/dev/null || true
+          git checkout -B gh-pages
+          git add -f publish/
+          git commit -m "deploy: $(date '+%Y-%m-%d %H:%M')" || true
+          git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/JNC121314/qlchat-dashboard.git gh-pages
+          git checkout main
 
       - name: 微信推送通知
         if: always()

@@ -274,7 +274,7 @@ def build_push_content(start, end, total, by_date, channel_name="武汉-6元"):
     <div style='font-size:12px;color:#94a3b8;margin-bottom:6px'>📅 {latest_date} 关键数据</div>
     <div style='display:flex;gap:8px;margin-bottom:14px'>{cards_html}</div>
     <div style='text-align:center;margin-top:8px'>
-      <a href='https://qlchat-dashboard.pages.dev' style='display:inline-block;background:#3b82f6;color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600'>📈 查看完整报告</a>
+      <a href='https://jnc121314.github.io/qlchat-dashboard/' style='display:inline-block;background:#3b82f6;color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600'>📈 查看完整报告</a>
     </div>
   </div>
   <div style='background:rgba(0,0,0,.2);padding:8px 18px;font-size:10px;color:#64748b;text-align:center'>
