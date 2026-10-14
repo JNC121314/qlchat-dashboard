@@ -68,18 +68,25 @@ jobs:
         env:
           TZ: Asia/Shanghai
         run: |
-          # 生成 .nojekyll 防止 Jekyll 处理
-          touch publish/.nojekyll
-          # 使用 peaceiris/actions-gh-pages 部署
-          # 简化: 直接用 git push 到 gh-pages 分支
+          # 使用 orphan 分支确保 gh-pages 只含发布文件
           git config user.name "WorkBuddy Bot"
           git config user.email "auto@workbuddy.dev"
-          git fetch origin gh-pages 2>/dev/null || true
-          git checkout -B gh-pages
-          git add -f publish/
-          git commit -m "deploy: $(date '+%Y-%m-%d %H:%M')" || true
+          cp publish/index.html /tmp/_index.html
+          cp publish/push_content.html /tmp/_push_content.html
+          # 进入临时目录创建 orphan 分支
+          cd ..
+          rm -rf /tmp/gh-pages-deploy
+          mkdir /tmp/gh-pages-deploy
+          cd /tmp/gh-pages-deploy
+          git init -b gh-pages
+          git config user.name "WorkBuddy Bot"
+          git config user.email "auto@workbuddy.dev"
+          touch .nojekyll
+          cp /tmp/_index.html index.html
+          cp /tmp/_push_content.html push_content.html
+          git add .nojekyll index.html push_content.html
+          git commit -m "deploy: $(date '+%Y-%m-%d %H:%M')"
           git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/JNC121314/qlchat-dashboard.git gh-pages
-          git checkout main
 
       - name: 微信推送通知
         if: always()
