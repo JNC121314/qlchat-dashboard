@@ -34,6 +34,9 @@ RATE_FIELDS = ["friend_rate", "group_rate", "enter_class1_rate", "finish_class1_
 def load_latest_raw():
     """加载最新的明细数据 (isSummary=N)，优先选择有数据的最新文件"""
     files = sorted(DATA_DIR.glob("raw_*_N.json"), reverse=True)
+    if not files:
+        return None, None, None
+    # 优先选择有数据的文件，找不到再返回空文件
     for f in files:
         try:
             with open(f, "r", encoding="utf-8") as fp:
@@ -44,7 +47,13 @@ def load_latest_raw():
                 return data, parts[1], parts[2]
         except Exception:
             continue
-    return None, None, None
+    # 没有有数据的文件，使用最新的（哪怕为空）
+    f = files[0]
+    with open(f, "r", encoding="utf-8") as fp:
+        data = json.load(fp)
+    name = f.stem
+    parts = name.split("_")
+    return data, parts[1], parts[2]
 
 
 def aggregate_daily(records):
@@ -286,15 +295,19 @@ def build_push_content(start, end, total, by_date, channel_name="武汉-6元"):
 def main():
     data, start, end = load_latest_raw()
     if not data:
-        print("❌ 没有数据文件，请先运行 fetch_qlchat_data.py")
-        sys.exit(1)
-
-    records = data.get("data") or []
-    print(f"📅 数据区间: {start} ~ {end}, 共 {len(records)} 条记录")
-
-    by_date = aggregate_daily(records)
-    by_channel = aggregate_channel(records)
-    total = get_total_summary(records)
+        # 数据为空时仍生成空白报告（部署不中断）
+        print("⚠️ 没有数据，生成空白报告")
+        records = []
+        by_date = {}
+        by_channel = {}
+        total = defaultdict(int)
+        start = end = datetime.now().strftime("%Y-%m-%d")
+    else:
+        records = data.get("data") or []
+        print(f"📅 数据区间: {start} ~ {end}, 共 {len(records)} 条记录")
+        by_date = aggregate_daily(records)
+        by_channel = aggregate_channel(records)
+        total = get_total_summary(records)
 
     cfg_path = CONFIG_FILE
     cfg = {}

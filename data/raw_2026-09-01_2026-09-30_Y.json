@@ -1,0 +1,35 @@
+{
+  "state": {
+    "code": 0,
+    "msg": "操作成功"
+  },
+  "data": [
+    {
+      "delete_friend_num": 9,
+      "group_num": 13,
+      "finish_class1_rate": "21.43%",
+      "group_rate": "92.86%",
+      "assign_num": 14,
+      "friend_num": 14,
+      "delete_friend_rate": "64.29%",
+      "ch_id_": 159236500062,
+      "channel_name_": "视频号—键盘乐—0元直播—贾",
+      "friend_rate": "100%",
+      "enter_class1_rate": "71.43%"
+    },
+    {
+      "group_rate": "92.86%",
+      "assign_num": 14,
+      "friend_num": 14,
+      "delete_friend_num": 9,
+      "group_num": 13,
+      "finish_class1_rate": "21.43%",
+      "delete_friend_rate": "64.29%",
+      "channel_name_": "汇总",
+      "friend_rate": "100%",
+      "enter_class1_rate": "71.43%"
+    }
+  ],
+  "id": null,
+  "timestamp": 1791955841426
+}

@@ -1,0 +1,50 @@
+{
+  "state": {
+    "code": 0,
+    "msg": "操作成功"
+  },
+  "data": [
+    {
+      "delete_friend_num": 4,
+      "group_num": 6,
+      "finish_class1_rate": "0%",
+      "group_rate": "100%",
+      "assign_num": 6,
+      "statdate": "2026-09-02",
+      "friend_num": 6,
+      "delete_friend_rate": "66.67%",
+      "ch_id_": 159236500062,
+      "channel_name_": "视频号—键盘乐—0元直播—贾",
+      "friend_rate": "100%",
+      "enter_class1_rate": "33.33%"
+    },
+    {
+      "delete_friend_num": 5,
+      "group_num": 7,
+      "finish_class1_rate": "37.5%",
+      "group_rate": "87.5%",
+      "assign_num": 8,
+      "statdate": "2026-09-01",
+      "friend_num": 8,
+      "delete_friend_rate": "62.5%",
+      "ch_id_": 159236500062,
+      "channel_name_": "视频号—键盘乐—0元直播—贾",
+      "friend_rate": "100%",
+      "enter_class1_rate": "100%"
+    },
+    {
+      "delete_friend_num": 9,
+      "group_num": 13,
+      "finish_class1_rate": "21.43%",
+      "group_rate": "92.86%",
+      "assign_num": 14,
+      "friend_num": 14,
+      "delete_friend_rate": "64.29%",
+      "channel_name_": "-",
+      "friend_rate": "100%",
+      "enter_class1_rate": "71.43%"
+    }
+  ],
+  "id": null,
+  "timestamp": 1791955824273
+}
