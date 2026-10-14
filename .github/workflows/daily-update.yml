@@ -1,0 +1,124 @@
+name: qlchat 武汉-6元 渠道日报
+
+on:
+  schedule:
+    # 北京时间 9/11/15/19/22 点 = UTC 1/3/7/14
+    - cron: '0 1,3,7,14 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  update-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 拉取数据（昨日 + 当月累计）
+        env:
+          TZ: Asia/Shanghai
+          QLCHAT_SA_TOKEN: ${{ secrets.QLCHAT_SA_TOKEN }}
+        run: |
+          YESTERDAY=$(date -d 'yesterday' '+%Y-%m-%d')
+          FIRST_OF_MONTH=$(date '+%Y-%m-01')
+          echo "📅 拉取: $FIRST_OF_MONTH ~ $YESTERDAY (明细)"
+          python fetch_qlchat_data.py --start "$FIRST_OF_MONTH" --end "$YESTERDAY" || {
+            echo "⚠️ 区间失败, 降级到昨日单日"
+            python fetch_qlchat_data.py --auto
+          }
+          echo "📅 拉取: $YESTERDAY (汇总)"
+          python fetch_qlchat_data.py --date "$YESTERDAY" --isSummary Y || true
+
+      - name: 生成报告
+        env:
+          TZ: Asia/Shanghai
+        run: python generate_report.py
+
+      - name: 准备部署文件
+        run: |
+          mkdir -p publish
+          if [ ! -f "publish/index.html" ] || [ $(stat -c%s publish/index.html 2>/dev/null || stat -f%z publish/index.html) -lt 1000 ]; then
+            echo "❌ 报告文件未生成或过小"
+            ls -la publish/ || true
+            exit 1
+          fi
+          echo "✅ 报告已准备 ($(stat -c%s publish/index.html 2>/dev/null || stat -f%z publish/index.html) bytes)"
+
+      - name: 部署到 Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          rm -rf ~/.npm/_npx 2>/dev/null || true
+          npm install wrangler@latest --no-save 2>/dev/null
+          cd publish
+          npx wrangler pages deploy . --project-name=qlchat-dashboard --branch=main
+
+      - name: 微信推送通知
+        if: always()
+        env:
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          python -c "
+          import json, os, urllib.request, glob
+          tokens_str = os.environ.get('PUSHPLUS_TOKEN', '')
+          tokens = [t.strip() for t in tokens_str.split(',') if t.strip()]
+          status = os.environ.get('JOB_STATUS', 'unknown')
+
+          if not tokens:
+              print('⚠️ PUSHPLUS_TOKEN 未配置')
+              exit(0)
+
+          push_html = ''
+          try:
+              with open('publish/push_content.html', 'r', encoding='utf-8') as f:
+                  push_html = f.read()
+          except Exception as e:
+              print(f'读取推送内容失败: {e}')
+
+          if status == 'success' and push_html:
+              content = push_html
+              title = '✅ qlchat 渠道日报已更新'
+          elif status == 'success':
+              content = '📊 qlchat 渠道日报已更新<br>查看: <a href=https://qlchat-dashboard.pages.dev>https://qlchat-dashboard.pages.dev</a>'
+              title = '✅ qlchat 渠道日报已更新'
+          else:
+              # 失败原因诊断
+              report_ok = os.path.exists('publish/index.html') and os.path.getsize('publish/index.html') > 1000
+              data_ok = bool(glob.glob('data/raw_*.json'))
+              if not data_ok:
+                  reason = '数据拉取失败(可能是 sa-token 过期, 需重新登录)'
+              elif report_ok:
+                  reason = '部署失败(Cloudflare Pages上传异常)'
+              else:
+                  reason = '报告生成失败(脚本错误或数据格式异常)'
+              content = f'qlchat 渠道日报更新失败<br>原因: {reason}<br><br>查看日志: <a href=https://github.com/JNC121314/qlchat-dashboard/actions>GitHub Actions</a>'
+              title = '⚠️ qlchat 渠道日报更新失败'
+
+          for token in tokens:
+              data = json.dumps({'token': token, 'title': title, 'content': content, 'template': 'html'}).encode('utf-8')
+              req = urllib.request.Request('https://www.pushplus.plus/send', data=data, headers={'Content-Type': 'application/json'})
+              try:
+                  resp = urllib.request.urlopen(req, timeout=15)
+                  result = json.loads(resp.read())
+                  code = result.get('code')
+                  if code == 200:
+                      print(f'✅ 推送成功: {token[:12]}...')
+                  else:
+                      print(f'❌ 推送失败: {token[:12]}... code={code}')
+              except Exception as e:
+                  print(f'❌ 推送异常: {e}')
+          "
